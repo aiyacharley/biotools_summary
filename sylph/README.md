@@ -82,17 +82,6 @@ For common use cases and fast explanations, see the above [cookbook](https://syl
 
 To incorporate *taxonomy* into sylph's outputs, see the [sylph-tax repository](https://github.com/bluenote-1577/sylph-tax). 
 
-> [!TIP] 
-> The new [sylph-tax](https://github.com/bluenote-1577/sylph-tax) program replaces the old [sylph-utils](https://github.com/bluenote-1577/sylph-utils) repository. 
-
-## Changelog
-
-#### Version v0.8.0 - 2024-12-12. 
-
-* Made the `inspect` option much less memory intensive. Slightly changed outputs when no genomes are found.
-
-See the [CHANGELOG](https://github.com/bluenote-1577/sylph/blob/main/CHANGELOG.md) for complete details.
-
 ## Citing sylph
 
 Jim Shaw and Yun William Yu. Rapid species-level metagenome profiling and containment estimation with sylph (2024). Nature Biotechnology.
