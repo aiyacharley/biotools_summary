@@ -8,6 +8,7 @@ A repository that regularly collects and organizes bioinformatics-related tools.
 - [CRC_GUS](#crc_gus)：识别肠道微生物β-葡糖醛酸酶
 - [Spacedust](#spacedust)：利用结构同源性与新型统计模型，实现微生物保守基因簇的De Novo发现
 - [MMETHANE](#mmethane)：面向微生物组与代谢组的可解释 AI 预测模型
+- [HMMER](#hmmer)：隐马尔可夫模型（HMM）序列分析工具套件，特别适用于蛋白质功能注释
 
 
 --------------------------------------------------
@@ -137,3 +138,89 @@ https://github.com/gerberlab/mmethane
 
 
 
+--------------------------------------------------
+## HMMER
+隐马尔可夫模型（HMM）序列分析工具套件，用于蛋白质序列同源性搜索和序列比对。HMMER 通过构建隐马尔可夫模型来捕捉蛋白质家族的多序列比对特征，能够更敏感地检测远缘同源序列。其中 `hmmscan` 命令用于将查询蛋白质序列与 HMM 数据库（如 Pfam）进行比对，特别适用于对宏基因组组装基因组（MAGs）或 contigs 的预测蛋白质进行功能注释。
+
+用户经验：在 contigs 或 MAGs 序列经 prokka 预测基因后，直接使用 Pfam-A.hmm 数据库对预测的蛋白质序列进行同源基因检索，效果优于默认的 prokka 注释流程。
+
+主要功能和特点包括：
+1. **高灵敏度的同源检测**：利用隐马尔可夫模型捕捉蛋白质家族的保守模式，能够检测远缘同源序列。
+2. **多种分析工具**：
+   - `hmmbuild`：从多序列比对构建 HMM 模型
+   - `hmmsearch`：使用 HMM 模型搜索蛋白质序列数据库
+   - `hmmscan`：将查询序列与 HMM 数据库进行比对（适用于功能注释）
+   - `hmmpress`：预处理 HMM 数据库以加速搜索
+   - `jackhmmer`：迭代搜索，构建更全面的同源序列集
+3. **高效的算法实现**：采用加速启发式算法（如 MSV、Bias 过滤器），在保持高灵敏度的同时大幅提升搜索速度。
+4. **广泛的数据库兼容**：支持 Pfam、TIGRFAM、PANTHER 等常用 HMM 数据库。
+5. **灵活的输入输出格式**：支持 FASTA、 Stockholm、 SELEX 等多种格式，输出结果可定制。
+
+#### 文章引用
+Eddy SR. Accelerated Profile HMM Searches. PLoS Comput Biol. 2011;7(10):e1002195. doi:10.1371/journal.pcbi.1002195
+
+#### 文档手册
+http://hmmer.org/
+https://github.com/EddyRivasLab/hmmer
+
+#### 实操命令
+- **安装 HMMER**
+```sh
+# 通过 Conda 安装
+conda install -c bioconda hmmer
+
+# 或从源码编译
+wget http://eddylab.org/software/hmmer/hmmer.tar.gz
+tar zxf hmmer.tar.gz
+cd hmmer-3.4
+./configure
+make
+make install
+```
+
+- **下载 Pfam 数据库**
+```sh
+# 下载 Pfam-A.hmm 数据库
+wget https://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz
+gunzip Pfam-A.hmm.gz
+
+# 预处理数据库（加速搜索）
+hmmpress Pfam-A.hmm
+
+# 数据库文件已下载并处理，路径如下：
+ll /home/data/t070605/Databases/Pfam/
+```
+
+- **hmmscan 基本用法**
+```sh
+# 将预测的蛋白质序列与 Pfam 数据库比对
+hmmscan --cpu 8 --domtblout output.domtblout Pfam-A.hmm protein_sequences.faa
+
+# 常用参数说明：
+# --cpu：使用的 CPU 线程数
+# --domtblout：输出域表格结果（推荐格式）
+# -E：E-value 阈值（默认 10.0）
+# --domE：域 E-value 阈值
+# --tblout：输出简洁的表格结果
+# -o：标准输出文件
+# --notextw：禁用文本换行，方便解析
+```
+
+- **结果解读**
+`output.domtblout` 文件包含每个查询序列与 Pfam 家族的比对信息，主要列包括：
+1. 查询序列名称
+2. 目标 HMM 名称（Pfam ID）
+3. E-value：统计显著性，值越小越显著
+4. score：比对得分
+5. bias：偏差校正值
+6. 查询序列的匹配区间
+7. HMM 模型的匹配区间
+
+- **结合 prokka 输出的使用示例**
+```sh
+# prokka 预测基因后，提取蛋白质序列
+# prokka 输出通常包含 .faa 文件（蛋白质 FASTA）
+
+# 使用 hmmscan 进行功能注释
+hmmscan --cut_ga --noali --cpu 1 --domtblout hmmscan_Blautia/hmmscan_L303A.txt /home/data/t070605/Databases/Pfam/Pfam-A.hmm ./03_prokka/L301A/L301A.faa
+```
